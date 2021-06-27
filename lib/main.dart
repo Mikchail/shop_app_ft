@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_app_am/providers/product.dart';
+import 'package:shop_app_am/providers/products.dart';
 import 'package:shop_app_am/screens/product_details_screen.dart';
 import 'package:shop_app_am/screens/product_overview_screen.dart';
 
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => ProductsProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
