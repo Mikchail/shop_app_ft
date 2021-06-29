@@ -24,7 +24,7 @@ class CartItem extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 4, horizontal: 15),
       ),
       confirmDismiss: (direction) {
-        showDialog(
+        return showDialog(
             context: context,
             builder: (ctx) {
               return AlertDialog(

@@ -7,6 +7,7 @@ import 'package:shop_app_am/screens/cart_screen.dart';
 import 'package:shop_app_am/screens/orders_screen.dart';
 import 'package:shop_app_am/screens/product_details_screen.dart';
 import 'package:shop_app_am/screens/product_overview_screen.dart';
+import 'package:shop_app_am/screens/user_products_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OrdersProvider()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.purple,
@@ -32,6 +34,7 @@ class MyApp extends StatelessWidget {
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           CartSreen.routeName: (ctx) => CartSreen(),
           OrdersScreen.routeName: (ctx) => OrdersScreen(),
+          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
         },
       ),
     );
