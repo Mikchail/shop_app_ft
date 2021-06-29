@@ -25,7 +25,7 @@ class CartSreen extends StatelessWidget {
                     Text("Total", style: TextStyle(fontSize: 20)),
                     Spacer(),
                     Chip(
-                      label: Text("\$${cart.totalAmount.round()}",
+                      label: Text("\$${cart.totalAmount.toStringAsFixed(2)}",
                           style: TextStyle(color: Colors.white)),
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
