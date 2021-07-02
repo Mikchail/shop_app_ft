@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shop_app_am/providers/product.dart';
+import 'package:shop_app_am/providers/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = "/edit-product";
@@ -15,7 +17,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlController = TextEditingController();
   final _form = GlobalKey<FormState>();
   var _editProduct = Product(
-      id: "1",
+      id: "null",
       title: "title",
       description: "description",
       price: 0,
@@ -25,6 +27,35 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void initState() {
     _imageUrlFocusNode.addListener(_updateImageUrl);
     super.initState();
+  }
+
+  var _isInit = true;
+  var _mapProducts = {
+    "title": "",
+    "description": "",
+    "price": "",
+    "imageUrl": "",
+  };
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context)?.settings.arguments;
+      if (productId != null) {
+        _editProduct =
+            Provider.of<ProductsProvider>(context).findProductByID(productId as String);
+        _mapProducts = {
+          "title": _editProduct.title,
+          "description": _editProduct.description,
+          "price": _editProduct.price.toString(),
+          "imageUrl": "",
+        };
+        _imageUrlController.text = _editProduct.imageUrl;
+      }
+    }
+
+    _isInit = false;
+    super.didChangeDependencies();
   }
 
   @override
@@ -40,7 +71,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void _updateImageUrl() {
     if (!_imageUrlFocusNode.hasFocus) {
       if ((!_imageUrlController.text.startsWith('http') &&
-          !_imageUrlController.text.startsWith('https')) ||
+              !_imageUrlController.text.startsWith('https')) ||
           (!_imageUrlController.text.endsWith('.png') &&
               !_imageUrlController.text.endsWith('.jpg') &&
               !_imageUrlController.text.endsWith('.jpeg'))) {
@@ -51,10 +82,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void _saveForm() {
-    if(!_form.currentState!.validate()){
+    if (!_form.currentState!.validate()) {
       return;
     }
     _form.currentState?.save();
+    if(_editProduct.id == "null"){
+      Provider.of<ProductsProvider>(context, listen: false)
+          .addProduct(_editProduct);
+    } else {
+      Provider.of<ProductsProvider>(context, listen: false)
+          .editProduct(_editProduct);
+    }
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -77,6 +117,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     }
                     return null;
                   },
+                  initialValue: _mapProducts["title"],
                   decoration: InputDecoration(labelText: "Title"),
                   textInputAction: TextInputAction.next,
                   onFieldSubmitted: (_) {
@@ -92,6 +133,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   },
                 ),
                 TextFormField(
+                  initialValue: _mapProducts["price"],
                   decoration: InputDecoration(labelText: "Price"),
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.number,
@@ -121,6 +163,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   },
                 ),
                 TextFormField(
+                  initialValue: _mapProducts["description"],
                   decoration: InputDecoration(labelText: "Description"),
                   maxLines: 3,
                   keyboardType: TextInputType.multiline,

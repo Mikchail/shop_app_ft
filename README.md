@@ -15,3 +15,6 @@ A new Flutter project.
 - OrdersProvider
 - CartProvider
 - Product model with ChangeNotifier for changing "isFavorite"
+
+## Second module - Work with input
+- add, delete, edit product.
