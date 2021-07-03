@@ -4,9 +4,10 @@ import 'package:shop_app_am/providers/cart.dart' show CartProvider;
 import 'package:shop_app_am/providers/orders.dart';
 import 'package:shop_app_am/widgets/cart_item.dart';
 
-class CartSreen extends StatelessWidget {
+class CartScreen extends StatelessWidget {
   static final routeName = "/cart";
-  const CartSreen({Key? key}) : super(key: key);
+
+  const CartScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +32,53 @@ class CartSreen extends StatelessWidget {
                     ),
                     FlatButton(
                       onPressed: () {
-                        Provider.of<OrdersProvider>(context, listen: false)
-                            .addOrder(
-                                cart.items.values.toList(), cart.totalAmount);
-                        cart.clear();
+                        if (cart.items.isEmpty) {
+                          showDialog<void>(
+                            context: context,
+                            // false = user must tap button, true = tap outside dialog
+                            builder: (BuildContext dialogContext) {
+                              return AlertDialog(
+                                title: Text("Warning!"),
+                                content: Text("Need to add least one product!"),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                      child: Text("Ok")),
+                                ],
+                              );
+                            },
+                          );
+                          return;
+                        }
+                        showDialog<void>(
+                          context: context,
+                          // false = user must tap button, true = tap outside dialog
+                          builder: (BuildContext dialogContext) {
+                            return AlertDialog(
+                              title: Text("Are you sure!"),
+                              content: Text("You can to add one more product!"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Provider.of<OrdersProvider>(context,
+                                              listen: false)
+                                          .addOrder(cart.items.values.toList(),
+                                              cart.totalAmount);
+                                      cart.clear();
+                                    },
+                                    child: Text("Continue")),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(false);
+                                    },
+                                    child: Text("Cancel")),
+                              ],
+                            );
+                          },
+                        );
                       },
                       child: Text("Order Now"),
                       textColor: Theme.of(context).primaryColor,
