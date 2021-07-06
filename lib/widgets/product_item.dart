@@ -17,7 +17,9 @@ class ProductItem extends StatelessWidget {
               Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
                   arguments: product.id);
             },
-            child: Image.network(product.imageUrl, fit: BoxFit.cover)),
+            child: Image.network(product.imageUrl, fit: BoxFit.cover, errorBuilder: (context, exception, stackTrace) {
+              return Center(child: Text('Your error widget...'),);
+            },)),
         footer: GridTileBar(
           leading: IconButton(
             icon: Icon(
@@ -25,7 +27,7 @@ class ProductItem extends StatelessWidget {
             onPressed: () {
               product.toggleFavoriteStatus();
             },
-            color: Theme.of(context).accentColor,
+            color:  Theme.of(context).accentColor,
           ),
           title: Text(
             product.title,

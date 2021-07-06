@@ -7,7 +7,7 @@ import 'package:shop_app_am/widgets/app_drawer.dart';
 import 'package:shop_app_am/widgets/badge.dart';
 import 'package:shop_app_am/widgets/product_grid.dart';
 
-enum FilterOptions { Favotites, All }
+enum FilterOptions { Favorites, All }
 
 class ProductOverviewScreen extends StatefulWidget {
   @override
@@ -16,6 +16,36 @@ class ProductOverviewScreen extends StatefulWidget {
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isInit = false;
+  var _isError = false;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    Provider.of<ProductsProvider>(context, listen: false).fetchAndGetProduct();
+
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (!_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<ProductsProvider>(context, listen: false)
+          .fetchAndGetProduct()
+          .then((_) => setState(() {
+                _isLoading = false;
+              }))
+          .catchError((_) => setState(() {
+                _isError = true;
+              }));
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +57,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                 onSelected: (FilterOptions selectedValue) {
                   setState(() {
                     switch (selectedValue) {
-                      case FilterOptions.Favotites:
+                      case FilterOptions.Favorites:
                         _showOnlyFavorites = true;
                         break;
                       case FilterOptions.All:
@@ -41,7 +71,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                           child: Text(
                             "Only favorite",
                           ),
-                          value: FilterOptions.Favotites),
+                          value: FilterOptions.Favorites),
                       PopupMenuItem(
                           child: Text(
                             "Show all",
@@ -63,6 +93,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             )
           ],
         ),
-        body: ProductGrid(_showOnlyFavorites));
+        body: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ProductGrid(_showOnlyFavorites));
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app_am/providers/products.dart';
-import 'package:shop_app_am/widgets/app_drawer.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   static const routeName = "/product-detail";
@@ -13,7 +12,7 @@ class ProductDetailScreen extends StatelessWidget {
         .findProductByID(productId);
     return Scaffold(
       appBar: AppBar(title: Text(product.title)),
-      drawer: AppDrawer(),
+      // drawer: AppDrawer(),
       body: Column(
         children: [
           Container(
