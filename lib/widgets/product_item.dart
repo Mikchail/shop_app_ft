@@ -4,7 +4,13 @@ import 'package:shop_app_am/providers/cart.dart';
 import 'package:shop_app_am/providers/product.dart';
 import 'package:shop_app_am/screens/product_details_screen.dart';
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {
+  @override
+  _ProductItemState createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  var _isLoadingFavoriteStatus = false;
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context);
@@ -21,11 +27,25 @@ class ProductItem extends StatelessWidget {
               return Center(child: Text('Your error widget...'),);
             },)),
         footer: GridTileBar(
-          leading: IconButton(
+          leading: _isLoadingFavoriteStatus ? CircularProgressIndicator(
+            color: Theme.of(context).accentColor,
+            strokeWidth: 2,
+          ) : IconButton(
             icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border),
-            onPressed: () {
-              product.toggleFavoriteStatus();
+            onPressed: () async {
+              setState(() {
+                _isLoadingFavoriteStatus = true;
+              });
+              try {
+                await product.toggleFavoriteStatus(product.id);
+              } catch(error) {
+                print(error);
+              } finally {
+                setState(() {
+                  _isLoadingFavoriteStatus = false;
+                });
+              }
             },
             color:  Theme.of(context).accentColor,
           ),

@@ -11,6 +11,7 @@ class UserProducts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffold = Scaffold.of(context);
     return ListTile(
       title: Text(product.title),
       leading: CircleAvatar(
@@ -29,7 +30,7 @@ class UserProducts extends StatelessWidget {
               color: Theme.of(context).primaryColor,
             ),
             IconButton(
-              onPressed: () {
+              onPressed: ()  {
                 showDialog<void>(
                   context: context,
                   // false = user must tap button, true = tap outside dialog
@@ -44,10 +45,17 @@ class UserProducts extends StatelessWidget {
                             },
                             child: Text("No")),
                         TextButton(
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop(true);
-                              Provider.of<ProductsProvider>(context, listen: false)
-                                  .deleteProduct(product.id);
+                              try {
+                                await Provider.of<ProductsProvider>(context, listen: false)
+                                    .deleteProduct(product.id);
+                              } catch(error) {
+                                scaffold.showSnackBar(SnackBar(
+                                  content: Text("Delete product Error!", textAlign: TextAlign.center,),
+                                  duration: Duration(seconds: 2),
+                                ));
+                              }
                             },
                             child: Text("Yes")),
                       ],

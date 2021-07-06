@@ -12,6 +12,15 @@ class CartItem {
     required this.price,
     required this.quantity,
   });
+
+  Map<String, dynamic> toJson(){
+    return {
+      "id": this.id,
+      "title": this.title,
+      "price": this.price,
+      "quantity": this.quantity
+    };
+  }
 }
 
 class CartProvider with ChangeNotifier {
@@ -33,12 +42,14 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
+
+
   void addItem(String productID, double price, String title) {
     if (_items.containsKey(productID)) {
       _items.update(
           productID,
           (value) => CartItem(
-              id: value.id,
+              id: productID,
               title: value.title,
               price: value.price,
               quantity: value.quantity + 1));
@@ -46,7 +57,7 @@ class CartProvider with ChangeNotifier {
       _items.putIfAbsent(
           productID,
           () => CartItem(
-                id: DateTime.now().toString(),
+                id: productID,
                 title: title,
                 price: price,
                 quantity: 1,

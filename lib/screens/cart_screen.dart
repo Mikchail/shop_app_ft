@@ -4,10 +4,17 @@ import 'package:shop_app_am/providers/cart.dart' show CartProvider;
 import 'package:shop_app_am/providers/orders.dart';
 import 'package:shop_app_am/widgets/cart_item.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static final routeName = "/cart";
 
   const CartScreen({Key? key}) : super(key: key);
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,59 +37,77 @@ class CartScreen extends StatelessWidget {
                           style: TextStyle(color: Colors.white)),
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
-                    FlatButton(
-                      onPressed: () {
-                        if (cart.items.isEmpty) {
+                    if (_isLoading)
+                      CircularProgressIndicator()
+                    else
+                      FlatButton(
+                        onPressed: () {
+                          if (cart.items.isEmpty) {
+                            showDialog<void>(
+                              context: context,
+                              // false = user must tap button, true = tap outside dialog
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: Text("Warning!"),
+                                  content:
+                                      Text("Need to add least one product!"),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop(false);
+                                        },
+                                        child: Text("Ok")),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
                           showDialog<void>(
                             context: context,
                             // false = user must tap button, true = tap outside dialog
                             builder: (BuildContext dialogContext) {
                               return AlertDialog(
-                                title: Text("Warning!"),
-                                content: Text("Need to add least one product!"),
+                                title: Text("Are you sure?"),
+                                content:
+                                    Text("You can to add one more product!"),
                                 actions: [
+                                  TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop(true);
+                                        setState(() {
+                                          _isLoading = true;
+                                        });
+                                        try {
+                                          await Provider.of<OrdersProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .addOrder(
+                                                  cart.items.values.toList(),
+                                                  cart.totalAmount);
+                                          cart.clear();
+                                        } catch (error) {
+                                          print(error);
+                                        } finally {
+                                          setState(() {
+                                            _isLoading = false;
+                                          });
+                                        }
+                                      },
+                                      child: Text("Continue")),
                                   TextButton(
                                       onPressed: () {
                                         Navigator.of(context).pop(false);
                                       },
-                                      child: Text("Ok")),
+                                      child: Text("Cancel")),
                                 ],
                               );
                             },
                           );
-                          return;
-                        }
-                        showDialog<void>(
-                          context: context,
-                          // false = user must tap button, true = tap outside dialog
-                          builder: (BuildContext dialogContext) {
-                            return AlertDialog(
-                              title: Text("Are you sure!"),
-                              content: Text("You can to add one more product!"),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(true);
-                                      Provider.of<OrdersProvider>(context,
-                                              listen: false)
-                                          .addOrder(cart.items.values.toList(),
-                                              cart.totalAmount);
-                                      cart.clear();
-                                    },
-                                    child: Text("Continue")),
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(false);
-                                    },
-                                    child: Text("Cancel")),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Text("Order Now"),
-                      textColor: Theme.of(context).primaryColor,
-                    )
+                        },
+                        child: Text("Order Now"),
+                        textColor: Theme.of(context).primaryColor,
+                      )
                   ],
                 ),
               ),
