@@ -18,3 +18,8 @@ A new Flutter project.
 
 ## Second module - Work with input
 - add, delete, edit product.
+- save data in state manager.
+
+## Third module - work with network
+- create crud operations for products
+- create some operations for orders
