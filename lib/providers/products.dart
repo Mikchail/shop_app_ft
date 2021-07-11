@@ -40,6 +40,15 @@ class ProductsProvider with ChangeNotifier {
     // ),
   ];
 
+  late String authToken;
+  String? userId;
+
+  void update(token, authUserId, previosItems) {
+    authToken = token;
+    userId = authUserId;
+    _items = previosItems;
+  }
+
   List<Product> get items {
     return [..._items];
   }
@@ -52,19 +61,30 @@ class ProductsProvider with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  Future<void> fetchAndGetProduct() async {
-    final url = Uri.https('js-simple-6efdf.firebaseio.com', '/products.json');
+  Future<void> fetchAndGetProduct([bool filterByUser = false]) async {
+    var filter = filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : "";
+    final url = Uri.parse(
+        'https://js-simple-6efdf.firebaseio.com/products.json?auth=$authToken&$filter');
+    final urlFavorites = Uri.parse(
+        'https://js-simple-6efdf.firebaseio.com/userFavorites/$userId.json?auth=$authToken');
     try {
       final response = await http.get(url);
+      final favoritesResponse = await http.get(urlFavorites);
+      final dataFavorites = json.decode(favoritesResponse.body);
+      print(dataFavorites);
       final data = json.decode(response.body) as Map<String, dynamic>;
+      if (data["error"] != null) {
+        throw HttpException(data["error"]);
+      }
       List<Product> list = [];
       data.forEach((prodId, prodDate) {
         list.add(Product(
             title: prodDate["title"],
             description: prodDate["description"],
-            price: prodDate["price"],
+            price: double.parse(prodDate["price"].toString()),
+            isFavorite:
+                dataFavorites == null ? false : dataFavorites[prodId] ?? false,
             imageUrl: prodDate["imageUrl"],
-            isFavorite: prodDate["isFavorite"],
             id: prodId));
       });
       _items = list;
@@ -76,7 +96,8 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     try {
-      final url = Uri.https('js-simple-6efdf.firebaseio.com', '/products.json');
+      final url = Uri.parse(
+          'js-simple-6efdf.firebaseio.com/products.json?auth=$authToken');
       var response = await http.post(
         url,
         body: json.encode({
@@ -84,7 +105,7 @@ class ProductsProvider with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          'creatorId': userId,
         }),
       );
       final newProduct = Product(
@@ -107,8 +128,8 @@ class ProductsProvider with ChangeNotifier {
   Future<void> editProduct(Product product) async {
     final prodIndex = _items.indexWhere((element) => element.id == product.id);
     if (prodIndex >= 0) {
-      final url = Uri.https(
-          'js-simple-6efdf.firebaseio.com', '/products/${product.id}.json');
+      final url = Uri.parse(
+          'https://js-simple-6efdf.firebaseio.com/products/${product.id}.json?auth=$authToken');
       try {
         await http.patch(url,
             body: json.encode({
@@ -116,7 +137,6 @@ class ProductsProvider with ChangeNotifier {
               'description': product.description,
               'imageUrl': product.imageUrl,
               'price': product.price,
-              'isFavorite': product.isFavorite,
             }));
         _items[prodIndex] = product;
         notifyListeners();
@@ -127,8 +147,8 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> deleteProduct(id) async {
-    final url =
-        Uri.https('js-simple-6efdf.firebaseio.com', '/products/$id.json');
+    final url = Uri.parse(
+        'https://js-simple-6efdf.firebaseio.com/products/$id.json?auth=$authToken');
     final existProductIndex = _items.indexWhere((element) => element.id == id);
     var existProduct = _items[existProductIndex];
     _items.removeWhere((element) => element.id == id);
@@ -139,5 +159,4 @@ class ProductsProvider with ChangeNotifier {
     }
     notifyListeners();
   }
-
 }

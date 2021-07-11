@@ -9,12 +9,14 @@ class UserProductsScreen extends StatelessWidget {
   static const routeName = "/users-products";
 
   Future<void> _refreshProducts(context) async {
-    await Provider.of<ProductsProvider>(context, listen: false).fetchAndGetProduct();
+    await Provider.of<ProductsProvider>(context, listen: false)
+        .fetchAndGetProduct(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final products = Provider.of<ProductsProvider>(context);
+    print("build");
+    // final products = Provider.of<ProductsProvider>(context);
     return Scaffold(
       drawer: AppDrawer(),
       appBar: AppBar(
@@ -27,16 +29,29 @@ class UserProductsScreen extends StatelessWidget {
               icon: Icon(Icons.add))
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshProducts(context),
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: ListView.builder(
-              itemCount: products.items.length,
-              itemBuilder: (c, i) => Column(
-                    children: [UserProducts(products.items[i]), Divider()],
-                  )),
-        ),
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => _refreshProducts(context),
+                    child: Consumer<ProductsProvider>(
+                      builder: (ctx, products, _) => Padding(
+                        padding: EdgeInsets.all(8),
+                        child: ListView.builder(
+                            itemCount: products.items.length,
+                            itemBuilder: (c, i) => Column(
+                                  children: [
+                                    UserProducts(products.items[i]),
+                                    Divider()
+                                  ],
+                                )),
+                      ),
+                    ),
+                  ),
       ),
     );
   }

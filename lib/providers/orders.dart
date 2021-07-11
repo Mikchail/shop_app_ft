@@ -23,8 +23,16 @@ class OrdersProvider with ChangeNotifier {
     return [..._orders];
   }
 
+  late String _authtoken;
+  void update(token, previosOrders) {
+    _authtoken = token;
+    _orders = previosOrders;
+  }
+
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
-    final url = Uri.https('js-simple-6efdf.firebaseio.com', '/orders.json');
+    print(_authtoken);
+    final url = Uri.parse(
+        'https://js-simple-6efdf.firebaseio.com/orders.json?auth=$_authtoken');
     try {
       var response = await http.post(
         url,
@@ -34,6 +42,9 @@ class OrdersProvider with ChangeNotifier {
           'dateTime': DateTime.now().toString(),
         }),
       );
+      if (response.statusCode >= 400) {
+        throw ErrorHint("Error");
+      }
       _orders.insert(
           0,
           OrderItem(
@@ -53,14 +64,15 @@ class OrdersProvider with ChangeNotifier {
       list.add(CartItem(
           id: cartData["id"],
           title: cartData["title"],
-          price: cartData["price"],
+          price: double.parse(cartData["price"].toString()),
           quantity: cartData["quantity"]));
     });
     return list;
   }
 
   Future<void> fetchAndGetOrders() async {
-    final url = Uri.https('js-simple-6efdf.firebaseio.com', '/orders.json');
+    final url = Uri.parse(
+        'https://js-simple-6efdf.firebaseio.com/orders.json?auth=$_authtoken');
     try {
       var response = await http.get(url);
       final orders = json.decode(response.body) as Map<String, dynamic>;
@@ -68,7 +80,7 @@ class OrdersProvider with ChangeNotifier {
       orders.forEach((orderId, orderData) {
         list.add(OrderItem(
             id: orderId,
-            amount: orderData["amount"],
+            amount: double.parse(orderData["amount"].toString()),
             products: getCartItem(orderData["products"]),
             dateTime: DateTime.parse(orderData["dateTime"])));
       });

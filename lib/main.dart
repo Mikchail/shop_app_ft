@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app_am/providers/auth.dart';
 import 'package:shop_app_am/providers/cart.dart';
 import 'package:shop_app_am/providers/orders.dart';
 import 'package:shop_app_am/providers/products.dart';
+import 'package:shop_app_am/screens/auth_screen.dart';
 import 'package:shop_app_am/screens/cart_screen.dart';
 import 'package:shop_app_am/screens/edit_product_screen.dart';
 import 'package:shop_app_am/screens/orders_screen.dart';
@@ -18,28 +20,47 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ProductsProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => OrdersProvider()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-        ),
-        home: ProductOverviewScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-          CartScreen.routeName: (ctx) => CartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
-        },
-      ),
-    );
+        providers: [
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
+              create: (ctx) => ProductsProvider(),
+              update: (ctx, auth, previosProducts) => ProductsProvider()
+                ..update(
+                    auth.token ?? "",
+                    auth.userId,
+                    previosProducts?.items == null
+                        ? []
+                        : previosProducts?.items)),
+          ChangeNotifierProvider(create: (_) => CartProvider()),
+          ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+              create: (ctx) => OrdersProvider(),
+              update: (ctx, auth, previosProducts) => OrdersProvider()
+                ..update(
+                    auth.token,
+                    previosProducts?.orders == null
+                        ? []
+                        : previosProducts?.orders)),
+        ],
+        child: Consumer<AuthProvider>(
+          builder: (context, authData, _) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                primarySwatch: Colors.purple,
+                accentColor: Colors.deepOrange,
+              ),
+              home: authData.isAuth ? ProductOverviewScreen() : AuthScreen(),
+              routes: {
+                ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+                CartScreen.routeName: (ctx) => CartScreen(),
+                OrdersScreen.routeName: (ctx) => OrdersScreen(),
+                UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+                EditProductScreen.routeName: (ctx) => EditProductScreen(),
+              },
+            );
+          },
+        ));
   }
 }
 

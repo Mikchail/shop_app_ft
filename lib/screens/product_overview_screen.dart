@@ -22,8 +22,6 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
   @override
   void initState() {
-    Provider.of<ProductsProvider>(context, listen: false).fetchAndGetProduct();
-
     super.initState();
   }
 
@@ -93,10 +91,12 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             )
           ],
         ),
-        body: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ProductGrid(_showOnlyFavorites));
+        body: _isError
+            ? Text("Error")
+            : _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ProductGrid(_showOnlyFavorites));
   }
 }
