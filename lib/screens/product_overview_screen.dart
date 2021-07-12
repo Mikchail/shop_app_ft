@@ -17,8 +17,8 @@ class ProductOverviewScreen extends StatefulWidget {
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _showOnlyFavorites = false;
   var _isInit = false;
-  var _isError = false;
-  var _isLoading = false;
+  // var _isError = false;
+  // var _isLoading = false;
 
   @override
   void initState() {
@@ -28,17 +28,16 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   @override
   void didChangeDependencies() {
     if (!_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-      Provider.of<ProductsProvider>(context, listen: false)
-          .fetchAndGetProduct()
-          .then((_) => setState(() {
-                _isLoading = false;
-              }))
-          .catchError((_) => setState(() {
-                _isError = true;
-              }));
+      // setState(() {
+      //   _isLoading = true;
+      // });
+
+      // .then((_) => setState(() {
+      //       _isLoading = false;
+      //     }))
+      // .catchError((_) => setState(() {
+      //       _isError = true;
+      //     }));
     }
     _isInit = false;
     super.didChangeDependencies();
@@ -46,6 +45,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("build");
     return Scaffold(
         drawer: AppDrawer(),
         appBar: AppBar(
@@ -91,12 +91,20 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             )
           ],
         ),
-        body: _isError
-            ? Text("Error")
-            : _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : ProductGrid(_showOnlyFavorites));
+        body: FutureBuilder(
+            future: Provider.of<ProductsProvider>(context, listen: false)
+                .fetchAndGetProduct(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (snapshot.hasError) {
+                Center(child: Text("Error"));
+              }
+
+              return ProductGrid(_showOnlyFavorites);
+            }));
   }
 }

@@ -8,9 +8,14 @@ A new Flutter project.
 #### Screens:
 - Product Overview 
 - Product Details
+- Product Edit and Add
+- User Product
 - Cart 
 - Orders
+- Auth
+- Splash
 #### State manager - Provider
+- AuthProvider
 - ProductsProvider
 - OrdersProvider
 - CartProvider
@@ -23,3 +28,9 @@ A new Flutter project.
 ## Third module - work with network
 - create crud operations for products
 - create some operations for orders
+
+## Firth module - authentication
+- login
+- logout
+- autologout
+- save user-date in shared-storage

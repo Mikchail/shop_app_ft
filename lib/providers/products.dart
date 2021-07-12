@@ -71,7 +71,6 @@ class ProductsProvider with ChangeNotifier {
       final response = await http.get(url);
       final favoritesResponse = await http.get(urlFavorites);
       final dataFavorites = json.decode(favoritesResponse.body);
-      print(dataFavorites);
       final data = json.decode(response.body) as Map<String, dynamic>;
       if (data["error"] != null) {
         throw HttpException(data["error"]);
@@ -90,6 +89,7 @@ class ProductsProvider with ChangeNotifier {
       _items = list;
       notifyListeners();
     } catch (error) {
+      print(error);
       throw (error);
     }
   }

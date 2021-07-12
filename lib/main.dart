@@ -10,6 +10,7 @@ import 'package:shop_app_am/screens/edit_product_screen.dart';
 import 'package:shop_app_am/screens/orders_screen.dart';
 import 'package:shop_app_am/screens/product_details_screen.dart';
 import 'package:shop_app_am/screens/product_overview_screen.dart';
+import 'package:shop_app_am/screens/splash_screen.dart';
 import 'package:shop_app_am/screens/user_products_screen.dart';
 
 void main() {
@@ -22,6 +23,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => CartProvider()),
+          ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+              create: (ctx) => OrdersProvider(),
+              update: (ctx, auth, previosProducts) => OrdersProvider()
+                ..update(
+                    auth.token,
+                    auth.userId,
+                    previosProducts?.orders == null
+                        ? []
+                        : previosProducts?.orders)),
           ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
               create: (ctx) => ProductsProvider(),
               update: (ctx, auth, previosProducts) => ProductsProvider()
@@ -31,15 +42,6 @@ class MyApp extends StatelessWidget {
                     previosProducts?.items == null
                         ? []
                         : previosProducts?.items)),
-          ChangeNotifierProvider(create: (_) => CartProvider()),
-          ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
-              create: (ctx) => OrdersProvider(),
-              update: (ctx, auth, previosProducts) => OrdersProvider()
-                ..update(
-                    auth.token,
-                    previosProducts?.orders == null
-                        ? []
-                        : previosProducts?.orders)),
         ],
         child: Consumer<AuthProvider>(
           builder: (context, authData, _) {
@@ -50,7 +52,15 @@ class MyApp extends StatelessWidget {
                 primarySwatch: Colors.purple,
                 accentColor: Colors.deepOrange,
               ),
-              home: authData.isAuth ? ProductOverviewScreen() : AuthScreen(),
+              home: authData.isAuth
+                  ? ProductOverviewScreen()
+                  : FutureBuilder(
+                      future: authData.tryToLogin(),
+                      builder: (ctx, authDataSnapshot) =>
+                          authDataSnapshot.connectionState ==
+                                  ConnectionState.waiting
+                              ? SplashScreen()
+                              : AuthScreen()),
               routes: {
                 ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
                 CartScreen.routeName: (ctx) => CartScreen(),
